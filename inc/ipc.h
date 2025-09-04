@@ -8,7 +8,6 @@ POSIX IPC */
 
 #include <stdbool.h>
 #include <stdlib.h>
-#include <semaphore.h>
 
 #define SHARED_BUFF_SIZE 16 // MAX number of TRACE at once
 #define NO_DATA 0xffffffff  // Init value for SHARED MEMORY values in array 
@@ -28,18 +27,14 @@ POSIX IPC */
 
 extern const char *const SEM_NAME[];
 
-//extern const char *const SEM_NAME_SETUP[];  // NAMES FOR SEMAPHORES
-//extern const char *const SHARED_MEM_NAME[]; // NAMES FOR SHARED MEMORY
-
 // Macro for Error handling
 #define handle_error(msg)\
     do { perror(msg); exit(EXIT_FAILURE); } while(0)
 
 typedef struct _shared_memory{
     _trace buffer[SHARED_BUFF_SIZE];
-    bool terminate; // I can know when PM1 and PM2 end so i can terminate MM
+    bool terminate;     // I can know when PM1 and PM2 end so i can terminate MM
+    bool last_chunk;    // I can know when a BLOCK of trace end
 }_shared_memory;
-
-/* ------------------------------------------------------- */
 
 #endif

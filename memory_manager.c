@@ -11,7 +11,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
-#include <signal.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <semaphore.h>
@@ -37,12 +36,20 @@ int main(int argc, char **argv){
     shm_unlink(SHARED_MEM_NAME);
     sem_unlink(SEM_NAME[0]); sem_unlink(SEM_NAME[1]); sem_unlink(SEM_NAME[2]);
 
-    //_link_list hash_table[HASH_TABLE_SIZE];
+    _link_list hash_table[2][HASH_TABLE_SIZE];
+    ht_init(hash_table[0]); ht_init(hash_table[1]);
+
+
     pid_t children[2], pid;
-    int status;
+
+    // Statistics
+    _stats stats;
+    memset(&stats, 0, sizeof(stats)); 
+
+    int cur_k[2] = {0, 0}, cur_mem_space[2] = {0, 0};
 
     // Data from User, usefull for Page Manager
-    int q_block_size = 2, max = 2;
+    int q_block_size = 20, max = 1000, k = 10, memory_space = 100/2;
 
     // Make POSIX SEMAPHORES
     sem_t *semaphore[3];
@@ -67,8 +74,10 @@ int main(int argc, char **argv){
         // CS1 for PM1
 
         memcpy(&mem_instance, shared_mem, sizeof(_shared_memory));
-        printf("CS1\n");
-        wtf(mem_instance.buffer);
+        if(mem_instance.terminate != true)
+            mmu_FWF(hash_table[0], mem_instance.buffer, &cur_k[0], k, &cur_mem_space[0], memory_space, mem_instance.last_chunk, &stats);
+        //printf("CS1\n");
+        // wtf(mem_instance.buffer);
 
 
         sem_post(semaphore[PM2_SEMAPHORE]);
@@ -76,8 +85,10 @@ int main(int argc, char **argv){
         // CS2 for PM2
 
         memcpy(&mem_instance, shared_mem, sizeof(_shared_memory));
-        printf("CS2\n");
-        //wtf(mem_instance.buffer);
+        if(mem_instance.terminate != true)
+            mmu_FWF(hash_table[1], mem_instance.buffer, &cur_k[1], k, &cur_mem_space[1], memory_space, mem_instance.last_chunk, &stats);
+        //printf("CS2\n");
+        // wtf(mem_instance.buffer);
     }
 
     // Collect zombie processes. They have terminated properly
@@ -95,6 +106,15 @@ int main(int argc, char **argv){
         sem_close(semaphore[i]);
         sem_unlink(SEM_NAME[i]);
     }
+
+    ht_destroy(hash_table[0]); ht_destroy(hash_table[1]);
+
+
+    printf("STATS\n");
+    printf("R:%d, W:%d, PF:%d, TRACE:%d FLUSH:%d\n", stats.operation[READ], stats.operation[WRITE],
+        stats.page_foult, stats.traces_read, stats.flush);
+
+
 
     return 0;
 }

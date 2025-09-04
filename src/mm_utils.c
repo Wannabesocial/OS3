@@ -32,3 +32,51 @@ void mmu_create_childrens(pid_t *child_pid, const int q_block_size, const int ma
         }
     }
 }
+
+void mmu_FWF(_link_list *ht, const _trace *trace, int *cur_k, const int k, int *cur_mem_space,
+    const int mem_space, const bool last_chunk, _stats *stats){
+
+    int entry;
+
+    for(int i = 0; i < SHARED_BUFF_SIZE; i++){
+
+        if(trace[i].logical_address == NO_DATA){
+            break;
+        }
+
+        // We have a trace
+        stats->traces_read++;
+        entry = hash_function(trace[i].logical_address);
+
+        // Already in memory
+        if(ht_find(ht, entry, trace[i].logical_address) == true){
+            continue;
+        }
+
+        // We just got Page Fault
+        stats->page_foult++;
+        (*cur_k)++;
+
+        // We must Flush the HASHED PAGE TABLE, and do RESETS
+        if(*cur_k == k+1){
+            ht_destroy(ht);
+            stats->flush++;
+            *cur_k = 0;
+            *cur_mem_space = 0;
+        }
+
+        // No memory in "RAM"
+        if(*cur_mem_space+1 == mem_space){
+            continue;
+        }
+
+        // We can finaly insert in HASHED PAGE TABLE
+        (*cur_mem_space)++;
+        (trace[i].operation == 'R') ? stats->operation[READ]++ : stats->operation[WRITE]++;
+        ht_insert(ht, entry, trace[i].logical_address);        
+    }
+
+    if(last_chunk == true){
+        *cur_k = 0; // Reset k couse we end with the chunk
+    }
+}

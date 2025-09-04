@@ -6,8 +6,8 @@ in a Config File, aka the 2 traces files */
 
 #include <stdio.h>
 
-#define TRACE_FILE_ROW_SIZE 11 // 11 bytes per row
-#define OFFSET_BITS 12  // 4096 = 2^12 = 12bits    
+#define TRACE_FILE_ROW_SIZE 11  // 11 bytes per row
+#define OFFSET_BITS 12          // 4096 = 2^12 = 12bits    
 
 extern const char *const TRACE_FILE[];
 

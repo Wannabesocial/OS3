@@ -1,7 +1,7 @@
 # C compiler we use
 CXX = gcc 
 
-CFLAGS = -lpthread -Iinc
+CFLAGS = -Iinc
 
 LDLIBS = -lrt -lm 
 
@@ -26,10 +26,6 @@ OBJ = $(SRC:src/%.c=$(OBJ_DIR)/%.o)
 
 # Main target
 all: $(MM) $(PM)
-
-# Create the directory that will keep the FIFOs files (ffs_in, ffs_out)
-# $(FIFOs_DIR):
-# 	mkdir -p $(FIFOs_DIR)
 
 # Build (Memmory Manager) executable
 $(MM): memory_manager.c $(OBJ)
