@@ -6,7 +6,8 @@ in a Config File, aka the 2 traces files */
 
 #include <stdio.h>
 
-#define TRACE_FILE_ROW_SIZE 11 // 11 bytes per row 
+#define TRACE_FILE_ROW_SIZE 11 // 11 bytes per row
+#define OFFSET_BITS 12  // 4096 = 2^12 = 12bits    
 
 extern const char *const TRACE_FILE[];
 
@@ -17,7 +18,7 @@ typedef struct _trace{
 
 /* --------------------------------------- */
 
-/* Read and Save a number of traces. File must be already OPEN. REMEMBER to CLOSE it */
+/* Init Buffer, Read and Save a number of traces. File must be already OPEN. REMEMBER to CLOSE it */
 void cf_read(_trace *traces, const int max_traces, FILE *file);
 
 /* Find and Return the NUmber of Rows of a Trace File */
