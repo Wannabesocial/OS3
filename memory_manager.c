@@ -17,9 +17,11 @@
 #include <sys/mman.h>
 
 
-void wtf(_trace *buff){
+void wtf(_trace *buff, int qblock){
 
-    for(int i = 0; i < SHARED_BUFF_SIZE; i++){
+    printf("WTF\n");
+
+    for(int i = 0; i < qblock; i++){
 
         if(buff[i].logical_address == NO_DATA){
             return;
@@ -46,10 +48,10 @@ int main(int argc, char **argv){
     _stats stats;
     memset(&stats, 0, sizeof(stats)); 
 
-    int cur_k[2] = {0, 0}, cur_mem_space[2] = {0, 0};
+    int cur_mem_space[2] = {0, 0};
 
     // Data from User, usefull for Page Manager
-    int q_block_size = 20, max = 1000, k = 10, memory_space = 100/2;
+    int q_block_size = 100, max = 1000, k = 40, memory_space = 70/2, max_frames_alocated = 0;
 
     // Make POSIX SEMAPHORES
     sem_t *semaphore[3];
@@ -66,29 +68,51 @@ int main(int argc, char **argv){
     mmu_create_childrens(children, q_block_size, max);
 
     // Simulation
-    _shared_memory mem_instance = {.terminate = false}; // Temporary save of SHARED MEMORY instans
-    while(mem_instance.terminate == false){
+    bool end = false, last_chunk;
+    _trace *trace;
+    int trace_read, j ;
 
-        sem_post(semaphore[PM1_SEMAPHORE]);
-        sem_wait(semaphore[MM_SEMAPHORE]);
-        // CS1 for PM1
+    if((trace = (_trace *) malloc(sizeof(_trace) * q_block_size)) == NULL){
+        handle_error("Error in (malloc), memory_manager.c");
+    }
 
-        memcpy(&mem_instance, shared_mem, sizeof(_shared_memory));
-        if(mem_instance.terminate != true)
-            mmu_FWF(hash_table[0], mem_instance.buffer, &cur_k[0], k, &cur_mem_space[0], memory_space, mem_instance.last_chunk, &stats);
-        //printf("CS1\n");
-        // wtf(mem_instance.buffer);
+    while(end == false){
 
+        for(int i = 0; i < 2; i++){
 
-        sem_post(semaphore[PM2_SEMAPHORE]);
-        sem_wait(semaphore[MM_SEMAPHORE]);
-        // CS2 for PM2
+            trace_read = 0;
+            last_chunk = false;
 
-        memcpy(&mem_instance, shared_mem, sizeof(_shared_memory));
-        if(mem_instance.terminate != true)
-            mmu_FWF(hash_table[1], mem_instance.buffer, &cur_k[1], k, &cur_mem_space[1], memory_space, mem_instance.last_chunk, &stats);
-        //printf("CS2\n");
-        // wtf(mem_instance.buffer);
+            memset(trace, NO_DATA, sizeof(_trace) * q_block_size);
+
+            while(last_chunk == false){
+
+                sem_post(semaphore[i]);
+                sem_wait(semaphore[MM_SEMAPHORE]);
+
+                end = shared_mem->terminate;
+                if(end == true)
+                    break;
+
+                last_chunk = shared_mem->last_chunk;
+
+                for(j = 0; j < SHARED_BUFF_SIZE; j++){
+
+                    if(shared_mem->buffer[j].logical_address == NO_DATA){
+                        break;
+                    }
+
+                    trace[j+trace_read].logical_address = shared_mem->buffer[j].logical_address;
+                    trace[j+trace_read].operation = shared_mem->buffer[j].operation;
+                }   
+
+                trace_read += j;
+            }
+
+            // HASH PAGE TABLE
+            if(end != true)
+                mmu_FWF(hash_table[i], trace, q_block_size, k, &cur_mem_space[i], memory_space, &stats, &max_frames_alocated);
+        }
     }
 
     // Collect zombie processes. They have terminated properly
@@ -109,12 +133,11 @@ int main(int argc, char **argv){
 
     ht_destroy(hash_table[0]); ht_destroy(hash_table[1]);
 
-
     printf("STATS\n");
-    printf("R:%d, W:%d, PF:%d, TRACE:%d FLUSH:%d\n", stats.operation[READ], stats.operation[WRITE],
-        stats.page_foult, stats.traces_read, stats.flush);
+    printf("R:%d, W:%d, PF:%d, TRACE:%d FLUSH:%d MAX FRAMES:%d\n", stats.operation[READ], stats.operation[WRITE],
+        stats.page_foult, stats.traces_read, stats.flush, stats.allocated_frames);
 
-
+    free(trace);
 
     return 0;
 }

@@ -9,7 +9,7 @@ POSIX IPC */
 #include <stdbool.h>
 #include <stdlib.h>
 
-#define SHARED_BUFF_SIZE 16 // MAX number of TRACE at once
+#define SHARED_BUFF_SIZE 128 // MAX number of TRACE at once
 #define NO_DATA 0xffffffff  // Init value for SHARED MEMORY values in array 
 #define NO_CAP -1           // No MAX number of traces given 
 

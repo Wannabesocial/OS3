@@ -6,7 +6,7 @@ A HASH TABLE where every entry is a LINK LIST */
 
 #include "link_list.h"
 
-#define HASH_TABLE_SIZE 8
+#define HASH_TABLE_SIZE 16
 #define hash_function(page_number) (page_number % HASH_TABLE_SIZE) // [0, HASH_TABLE_SIZE)
 
 /* ---------------------------------------------- */

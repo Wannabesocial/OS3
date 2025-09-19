@@ -23,8 +23,8 @@ typedef struct _stats{
 /* Create exactly 2 CHILDRENS with properly COMMAND LINE ARGUMENTS */
 void mmu_create_childrens(pid_t *child_pid, const int q_block_size, const int max);
 
-/* Flush When Full Algorithm in chunks */
-void mmu_FWF(_link_list *ht, const _trace *trace, int *cur_k, const int k, int *cur_mem_space,
-    const int mem_space, const bool last_chunk, _stats *stats);
+/* Flush When Full Algorithm */
+void mmu_FWF(_link_list *ht, const _trace *trace, const int size, const int k, int *cur_mem_space,
+    const int mem_space, _stats *stats, int *max_frames_alocated);
 
 #endif
