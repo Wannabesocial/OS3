@@ -3,7 +3,7 @@ CXX = gcc
 
 CFLAGS = -Iinc
 
-LDLIBS = -lrt -lm 
+LDLIBS = -lrt -lm -pthread
 
 # Output filename after compilation 
 MM = memory_manager
