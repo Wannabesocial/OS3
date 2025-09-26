@@ -51,7 +51,7 @@ int main(int argc, char **argv){
     int cur_mem_space[2] = {0, 0};
 
     // Data from User, usefull for Page Manager
-    int q_block_size = 100, max = 1000, k = 40, memory_space = 70/2, max_frames_alocated = 0;
+    int q_block_size = 100, max = NO_CAP, k = 50, memory_space = 100/2, max_frames_alocated = 0;
 
     // Make POSIX SEMAPHORES
     sem_t *semaphore[3];
