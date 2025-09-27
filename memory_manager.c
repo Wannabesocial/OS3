@@ -16,23 +16,12 @@
 #include <semaphore.h>
 #include <sys/mman.h>
 
-
-void wtf(_trace *buff, int qblock){
-
-    printf("WTF\n");
-
-    for(int i = 0; i < qblock; i++){
-
-        if(buff[i].logical_address == NO_DATA){
-            return;
-        }
-
-        printf("Address:%x\t Operation:%c\n", buff[i].logical_address, buff[i].operation);
-    }
-}
-
-
 int main(int argc, char **argv){
+
+    // Data from User, usefull for Page Manager
+    int q_block_size = 0, max = 0, k = 0, memory_space_per_process = 0;
+
+    mmu_init_values(argc, argv, &q_block_size, &k, &memory_space_per_process, &max);
 
     // Delete existed IPCS
     shm_unlink(SHARED_MEM_NAME);
@@ -41,17 +30,13 @@ int main(int argc, char **argv){
     _link_list hash_table[2][HASH_TABLE_SIZE];
     ht_init(hash_table[0]); ht_init(hash_table[1]);
 
-
     pid_t children[2], pid;
 
     // Statistics
     _stats stats;
     memset(&stats, 0, sizeof(stats)); 
 
-    int cur_mem_space[2] = {0, 0};
-
-    // Data from User, usefull for Page Manager
-    int q_block_size = 100, max = NO_CAP, k = 50, memory_space = 100/2, max_frames_alocated = 0;
+    int cur_mem_space[2] = {0, 0}, max_frames_alocated = 0;
 
     // Make POSIX SEMAPHORES
     sem_t *semaphore[3];
@@ -78,6 +63,7 @@ int main(int argc, char **argv){
 
     while(end == false){
 
+        // For both child processes
         for(int i = 0; i < 2; i++){
 
             trace_read = 0;
@@ -85,6 +71,7 @@ int main(int argc, char **argv){
 
             memset(trace, NO_DATA, sizeof(_trace) * q_block_size);
 
+            // Until we read all the q_block_Size
             while(last_chunk == false){
 
                 sem_post(semaphore[i]);
@@ -96,6 +83,7 @@ int main(int argc, char **argv){
 
                 last_chunk = shared_mem->last_chunk;
 
+                // Temporary save all the q_block_Size. We do this couse shared memory may be less than q_block_Size
                 for(j = 0; j < SHARED_BUFF_SIZE; j++){
 
                     if(shared_mem->buffer[j].logical_address == NO_DATA){
@@ -111,7 +99,7 @@ int main(int argc, char **argv){
 
             // HASH PAGE TABLE
             if(end != true)
-                mmu_FWF(hash_table[i], trace, q_block_size, k, &cur_mem_space[i], memory_space, &stats, &max_frames_alocated);
+                mmu_FWF(hash_table[i], trace, q_block_size, k, &cur_mem_space[i], memory_space_per_process, &stats, &max_frames_alocated);
         }
     }
 

@@ -27,4 +27,7 @@ void mmu_create_childrens(pid_t *child_pid, const int q_block_size, const int ma
 void mmu_FWF(_link_list *ht, const _trace *trace, const int size, const int k, int *cur_mem_space,
     const int mem_space, _stats *stats, int *max_frames_alocated);
 
+/* Initilize the values from argument line and check if is correct */
+void mmu_init_values(const int argc, char **argv, int *q_block_size, int *k, int *memory_space_per_process, int *max);
+
 #endif

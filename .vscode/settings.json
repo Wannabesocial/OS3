@@ -2,6 +2,7 @@
     "files.associations": {
         "ipc.h": "c",
         "mman.h": "c",
-        "unistd.h": "c"
+        "unistd.h": "c",
+        "string.h": "c"
     }
 }

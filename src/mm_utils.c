@@ -82,3 +82,16 @@ void mmu_FWF(_link_list *ht, const _trace *trace, const int size, const int k, i
         ht_insert(ht, entry, trace[i].logical_address);        
     }
 }
+
+void mmu_init_values(const int argc, char **argv, int *q_block_size, int *k, int *memory_space_per_process, int *max){
+
+    // We take lees tha the minimum or more than the maximun arguments.
+    if(argc < 4 || argc > 5){
+        handle_error("Not right number of arguments");
+    }
+
+    *q_block_size = atoi(argv[1]);
+    *k = atoi(argv[2]);
+    *memory_space_per_process = atoi(argv[3]) / 2;
+    *max = (argc == 5) ? atoi(argv[4]) : NO_CAP;    // 5 means MAX was given
+}
