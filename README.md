@@ -1,4 +1,4 @@
-# OS3 2025
+# Operating System 2025
 
 Δομη αρχειων.
 
